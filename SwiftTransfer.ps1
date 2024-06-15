@@ -103,7 +103,7 @@ function ScanAndSaveOutput {
      
     Get-ChildItem -Path $baseFolder -Recurse -Filter -Name "*T.pdf" |
     Select-String -Pattern "tasklist" -NotMatch |
-    Out-File -FilePath $env:USERPROFILE + '\Desktop\$JobNumber.txt'
+    Out-File -FilePath '$source$JobNumber-log.txt'
 }
 
 
