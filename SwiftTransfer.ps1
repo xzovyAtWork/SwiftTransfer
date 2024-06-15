@@ -46,6 +46,7 @@ $DestinationFolder.Location = new-object System.Drawing.Size(40,260)
 $EndPointLabel = New-Object System.Windows.Forms.label
 $EndPointLabel.text = "End Folder:"
 $EndPointLabel.Location = new-object System.Drawing.Size(20,300)
+
 $EndPoint = New-Object System.Windows.Forms.textbox
 $EndPoint.text = "Functionality & calibration sheets"
 $EndPoint.Multiline = $False
@@ -77,33 +78,30 @@ function MoveFiles {
     $jobNumber = $JobNumber.Text
      $unitNumbers = $UnitNumbers.Text.Split(',')
     # $unitNumbers = $UnitNumbers.Text -split ',\s*'
-    $baseFolder = $DestinationFolder.Text
     $folder = $EndPoint.Text
     $source = $UserRootFolder.Text
 
 
     foreach ($unit in $unitNumbers) {
-        $source1 = "$source$jobNumber-$unit FT.pdf"
-        $source2 = "$source$jobNumber-$unit WT.pdf"
-        $destination = Join-Path $baseFolder "$prefix-$jobNumber-$unit\$folder"
-        Move-Item -Path $source1 -Destination $destination
-        if (Test-Path -Path $source2 -PathType Leaf) {
-            Move-Item -Path $source2 -Destination $destination
+        $functionalityFile = "$source$jobNumber-$unit FT.pdf"
+        $waterTestFile = "$source$jobNumber-$unit WT.pdf"
+        $destination = Join-Path $DestinationFolder.text "$JobPrefix.text-$JobNumber.text-$unit\$folder"
+        Move-Item -Path $functionalityFile -Destination $destination
+        if (Test-Path -Path $waterTestFile -PathType Leaf) {
+            Move-Item -Path $waterTestFile -Destination $destination
         } else {
-            Write-Host "Source2 does not exist or is not a file: $source2"
+            Write-Host "waterTestFile does not exist or is not a file."
         }
     }
 }
 
 function ScanAndSaveOutput {
-    $jobNumber = $JobNumber.Text
     $unitNumbers = $UnitNumbers.Text.Split(',')
     $baseFolder = $DestinationFolder.Text
-    $source = $UserRootFolder.Text
      
-    Get-ChildItem -Path $baseFolder -Recurse -Filter -Name "*T.pdf" |
+    Get-ChildItem -Path $DestinationFolder.text -Recurse -Filter -Name "*T.pdf" |
     Select-String -Pattern "tasklist" -NotMatch |
-    Out-File -FilePath '$source$JobNumber-log.txt'
+    Out-File -FilePath '$UserRootFolder.text$JobNumber-log.txt'
 }
 
 
