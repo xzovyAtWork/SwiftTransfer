@@ -57,7 +57,7 @@ $UserRootLabel.text = "Source Folder:"
 $UserRootLabel.Location = new-object System.Drawing.Size(20,150)
 
 $UserRootFolder = New-Object System.Windows.Forms.textbox
-$UserRootFolder.text = $env:USERPROFILE + '/Desktop'
+$UserRootFolder.text = $env:USERPROFILE + '\Desktop'
 $UserRootFolder.Multiline = $False
 $UserRootFolder.Size = New-Object System.Drawing.Size(300,100)
 $UserRootFolder.Location = new-object System.Drawing.Size(40,180)
