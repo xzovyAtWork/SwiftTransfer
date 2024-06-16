@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 $JobPrefixLabel = New-Object System.Windows.Forms.label
 $JobPrefixLabel.text = "Date Code:"
-$JobPrefixLabel.Size = New-Object System.Drawing.Size(40,20)
+$JobPrefixLabel.Size = New-Object System.Drawing.Size(40,30)
 $JobPrefixLabel.Location = new-object System.Drawing.Size(20,10)
 
 $JobPrefix = New-Object System.Windows.Forms.textbox
@@ -57,7 +57,7 @@ $UserRootLabel.text = "Source Folder:"
 $UserRootLabel.Location = new-object System.Drawing.Size(20,150)
 
 $UserRootFolder = New-Object System.Windows.Forms.textbox
-$UserRootFolder.text = $env:USERPROFILE + '\Documents'
+$UserRootFolder.text = $env:USERPROFILE + '\Documents\'
 $UserRootFolder.Multiline = $False
 $UserRootFolder.Size = New-Object System.Drawing.Size(300,100)
 $UserRootFolder.Location = new-object System.Drawing.Size(40,180)
@@ -85,6 +85,7 @@ function MoveFiles {
     foreach ($unit in $unitNumbers) {
         $source1 = "$source$jobNumber-$unit FT.pdf"
         $source2 = "$source$jobNumber-$unit WT.pdf"
+        Write-Host $source1
         $destination = Join-Path $baseFolder "$prefix-$jobNumber-$unit\$folder"
         Move-Item -Path $source1 -Destination $destination
         if (Test-Path -Path $source2 -PathType Leaf) {
