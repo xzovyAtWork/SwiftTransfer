@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 $JobPrefixLabel = New-Object System.Windows.Forms.label
 $JobPrefixLabel.text = "Date Code:"
-$JobPrefixLabel.Size = New-Object System.Drawing.Size(40,20)
+$JobPrefixLabel.Size = New-Object System.Drawing.Size(80,30)
 $JobPrefixLabel.Location = new-object System.Drawing.Size(20,10)
 
 $JobPrefix = New-Object System.Windows.Forms.textbox
@@ -40,17 +40,16 @@ $DestinationFolderLabel.Location = new-object System.Drawing.Size(20,230)
 $DestinationFolder = New-Object System.Windows.Forms.textbox
 $DestinationFolder.text = "n:\3900\3906 - MSFT - CYS14 Ballard Direct Evap\2 Quality\Colo 1 Units 1 - 32"
 $DestinationFolder.Multiline = $False
-$DestinationFolder.Size = New-Object System.Drawing.Size(300,100)
+$DestinationFolder.Size = New-Object System.Drawing.Size(400,100)
 $DestinationFolder.Location = new-object System.Drawing.Size(40,260)
 
 $EndPointLabel = New-Object System.Windows.Forms.label
 $EndPointLabel.text = "End Folder:"
 $EndPointLabel.Location = new-object System.Drawing.Size(20,300)
-
 $EndPoint = New-Object System.Windows.Forms.textbox
 $EndPoint.text = "Functionality & calibration sheets"
 $EndPoint.Multiline = $False
-$EndPoint.Size = New-Object System.Drawing.Size(300,100)
+$EndPoint.Size = New-Object System.Drawing.Size(400,100)
 $EndPoint.Location = new-object System.Drawing.Size(40,330)
 
 $UserRootLabel = New-Object System.Windows.Forms.label
@@ -60,7 +59,7 @@ $UserRootLabel.Location = new-object System.Drawing.Size(20,150)
 $UserRootFolder = New-Object System.Windows.Forms.textbox
 $UserRootFolder.text = $env:USERPROFILE + '\Documents\'
 $UserRootFolder.Multiline = $False
-$UserRootFolder.Size = New-Object System.Drawing.Size(300,100)
+$UserRootFolder.Size = New-Object System.Drawing.Size(400,100)
 $UserRootFolder.Location = new-object System.Drawing.Size(40,180)
 
 $MoveFilesButton = New-Object System.Windows.Forms.button
@@ -78,30 +77,37 @@ function MoveFiles {
     $jobNumber = $JobNumber.Text
      $unitNumbers = $UnitNumbers.Text.Split(',')
     # $unitNumbers = $UnitNumbers.Text -split ',\s*'
+    $baseFolder = $DestinationFolder.Text
     $folder = $EndPoint.Text
     $source = $UserRootFolder.Text
 
 
     foreach ($unit in $unitNumbers) {
-        $functionalityFile = "$source$jobNumber-$unit FT.pdf"
-        $waterTestFile = "$source$jobNumber-$unit WT.pdf"
-        $destination = Join-Path $DestinationFolder.text "$JobPrefix.text-$JobNumber.text-$unit\$folder"
-        Move-Item -Path $functionalityFile -Destination $destination
-        if (Test-Path -Path $waterTestFile -PathType Leaf) {
-            Move-Item -Path $waterTestFile -Destination $destination
+        $source1 = "$source$jobNumber-$unit FT.pdf"
+        $source2 = "$source$jobNumber-$unit WT.pdf"
+
+        $destination = Join-Path $baseFolder "$prefix-$jobNumber-$unit\$folder"
+        Move-Item -Path $source1 -Destination $destination
+        Write-Host "$source1 moved to $destination"
+        if (Test-Path -Path $source2 -PathType Leaf) {
+            Move-Item -Path $source2 -Destination $destination
+            Write-Host "$source2 moved to $destination"
         } else {
-            Write-Host "waterTestFile does not exist or is not a file."
+            Write-Host "Does not exist or is not a file: $source2"
         }
+        Write-Host "$source1 moved to $destination"
     }
 }
 
 function ScanAndSaveOutput {
+    $jobNumber = $JobNumber.Text
     $unitNumbers = $UnitNumbers.Text.Split(',')
     $baseFolder = $DestinationFolder.Text
+    $source = $UserRootFolder.Text
      
-    Get-ChildItem -Path $DestinationFolder.text -Recurse -Filter -Name "*T.pdf" |
-    Select-String -Pattern "tasklist" -NotMatch |
-    Out-File -FilePath '$UserRootFolder.text$JobNumber-log.txt'
+    Get-ChildItem -Path $baseFolder -Recurse -Name -Filter "*T.pdf" |
+    Select-String -Pattern "tasklist", "inspection", '-calibration' -NotMatch |
+    Out-File -FilePath "$JobNumber-log.txt"
 }
 
 
@@ -124,15 +130,14 @@ $Form.Controls.add($JobNumberLabel)
 $Form.Controls.add($JobNumber)
 $Form.Controls.add($UnitNumbersLabel)
 $Form.Controls.add($UnitNumbers)
+$Form.Controls.add($UserRootLabel)
+$Form.Controls.add($UserRootFolder)
 $Form.Controls.add($DestinationFolderLabel)
 $Form.Controls.add($DestinationFolder)
 $Form.Controls.add($EndPointLabel)
 $Form.Controls.add($EndPoint)
-$Form.Controls.add($UserRootLabel)
-$Form.Controls.add($UserRootFolder)
-$Form.Controls.add($MoveFilesButton)
 $Form.Controls.add($SearchFilesButton)
+$Form.Controls.add($MoveFilesButton)
 
 $Form.Add_Shown({$Form.Activate()})
 $Form.ShowDialog()
-
