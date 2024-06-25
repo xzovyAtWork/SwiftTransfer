@@ -104,10 +104,11 @@ function ScanAndSaveOutput {
     $unitNumbers = $UnitNumbers.Text.Split(',')
     $baseFolder = $DestinationFolder.Text
     $source = $UserRootFolder.Text
+     # python .\testpy.py | Out-File -FilePath "C:\Users\CONFIGURATION\Desktop\test.csv" !!example 
      
     Get-ChildItem -Path $baseFolder -Recurse -Name -Filter "*T.pdf" |
     Select-String -Pattern "tasklist", "inspection", '-calibration' -NotMatch |
-    Out-File -FilePath "$JobNumber-log.txt"
+    Out-File -FilePath "$JobNumber-log.txt + $pythonScript"
 }
 
 
