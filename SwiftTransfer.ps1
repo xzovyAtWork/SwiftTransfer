@@ -71,6 +71,14 @@ $SearchFilesButton.text = "Search Files"
 $SearchFilesButton.Location = new-object System.Drawing.Size(280,400)
 
 
+#### example integration #####
+# $files = Get-ChildItem -Filter "*T.pdf"
+# foreach ($file in $files){
+    # python main.py $file
+# }
+
+
+
 function MoveFiles {
     # $prefix -match '\d{4}' 
     $prefix = $JobPrefix.Text
@@ -108,7 +116,7 @@ function ScanAndSaveOutput {
      
     Get-ChildItem -Path $baseFolder -Recurse -Name -Filter "*T.pdf" |
     Select-String -Pattern "tasklist", "inspection", '-calibration' -NotMatch |
-    Out-File -FilePath "$JobNumber-log.txt + $pythonScript"
+    Out-File -FilePath "$JobNumber-log.txt"
 }
 
 
