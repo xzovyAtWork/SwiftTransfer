@@ -1,5 +1,5 @@
-$UnitNumber = 59
-$JobNumber = 3558
+$UnitNumber = 1
+$JobNumber = 4062
 $Prefix =  $JobNumber.ToString().substring(0,2) + "00"
 
 $RootFolder = "N:\$Prefix"              #N:\<[0-9]x4>
@@ -33,9 +33,24 @@ $UnitFolder = Get-ChildItem  $ColoRootFolder "*-$UnitNumber*" | Where-Object { $
 
 $FunctionalityRootFolder = "$ColoRootFolder\$UnitFolder"
 $FunctionalityFolder = Get-ChildItem  $FunctionalityRootFolder "*functionality*"
+$FileName = $FunctionalityRootFolder.ToString()
 
 $UnitRootFolder = "$FunctionalityRootFolder\$FunctionalityFolder"
 
 $Destination = $UnitRootFolder
-# $Source = "https://apps.jci.com/sites/JCI-EdmontonElectricalTesters/Shared Documents/General/Plant 4/In Progress functionality reports/Ballard ALC/Ballard $JobNumber"
-Write-Host $UnitRootFolder
+$RootSource = $env:USERPROFILE + "\Documents" 
+$SourceFile = Get-ChildItem $RootSource "*$JobNumber-$UnitNumber*"
+foreach($file in $RootSource){
+    $FileFT = Get-ChildItem $file "*FT.pdf"
+    $FileWT = Get-ChildItem $file "*WT.pdf"
+}
+$FT = "$RootSource\$FileFT"
+if($FileWT){
+    $WT = "$RootSource\$FileWT"
+}
+Set-Location $UnitRootFolder
+# Move-Item $FT $Destination
+# Move-Item $WT $Destination
+Get-ChildItem $UnitRootFolder
+
+#"https://apps.jci.com/sites/JCI-EdmontonElectricalTesters/Shared Documents/General/Plant 4/In Progress functionality reports/Ballard ALC/Ballard $JobNumber"
