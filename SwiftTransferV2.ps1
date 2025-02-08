@@ -172,6 +172,7 @@ $MoveFilesButton.Location = new-object System.Drawing.Size(70,75)
 
 $MoveFilesButton.Add_Click({
     moveFiles -UnitNumberInput $UnitNumberInput -JobNumberInput $JobNumberInput
+    $Form.Close()
 })
 
 $Form = New-Object Windows.Forms.Form
