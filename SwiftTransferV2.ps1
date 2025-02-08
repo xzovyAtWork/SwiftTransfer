@@ -1,63 +1,142 @@
-function moveFiles{
+function moveFiles {
+    param (
+        $UnitNumberInput,
+        $JobNumberInput
+    )
 
-    $UnitNumber = $UnitNumberInput
-    $JobNumber = $JobNumberInput
-    $Prefix =  $JobNumber.ToString().substring(0,2) + "00"
+    $UnitNumber = [int]$UnitNumberInput.text
+    $JobNumber = $JobNumberInput.text
+    $Prefix =  $JobNumber.ToString().substring(0, 2) + "00"
 
-    $RootFolder = "N:\$Prefix"              #N:\<[0-9]x4>
-    $JobFolders = Get-ChildItem  $RootFolder "*$JobNumber*"
+    $RootFolder = "N:\$Prefix"
 
-    foreach($job in $JobFolders){
-        Write-Host Get-ChildItem $RootFolder\$job "2 Quality\*$Location*"
-        # Get-ChildItem $JobRootFolder\$job "2 Quality"
-        if(Get-ChildItem $RootFolder\$job "2 Quality\"){
-            if(Get-ChildItem "$RootFolder\$job\2 Quality" "*Units*"){
-                $QualityRootFolder = "$RootFolder\$job\2 Quality"  #  $QualityRootFolder: N:\<Prefix>\<JobNumber> - ...\2 Quality
-            } 
+    try {
+        $JobFolders = Get-ChildItem -Path $RootFolder -Filter "*$JobNumber*"
+        if ($JobFolders.Count -eq 0) {
+            throw "No job folders found matching the pattern *$JobNumber*"
+        }
+    } catch {
+        Write-Host "Error: $_"
+        return
+    }
+
+    foreach ($job in $JobFolders) {
+        try {
+            $qualityPath = "$RootFolder\$job\2 Quality"
+            $unitsPath = "$qualityPath\*Units*"
+
+            Write-Host "Checking path: $qualityPath"
+
+            if (Test-Path $qualityPath) {
+                if (Get-ChildItem -Path $qualityPath -Filter "*Units*") {
+                    $QualityRootFolder = $qualityPath
+                    Write-Host "Quality Root Folder found: $QualityRootFolder"
+                } else {
+                    Write-Host "No Units folder found in: $qualityPath"
+                }
+            } else {
+                Write-Host "Path does not exist: $qualityPath"
+            }
+        } catch {
+            Write-Host "Error accessing path: $_"
         }
     }
 
-    if($UnitNumber -lt 33){
-        $Colo = Get-ChildItem $QualityRootFolder "*32"
-    } elseif (($UnitNumber -ge 33) -and ($UnitNumber -le 64)){
-        $Colo = Get-ChildItem $QualityRootFolder "*64"
-    } elseif(($UnitNumber -ge 65) -and ($UnitNumber -le 96)){
-        $Colo = Get-ChildItem $QualityRootFolder "*96"
-    } elseif(($UnitNumber -ge 97) -and ($UnitNumber -le 128)){
-        $Colo = Get-ChildItem $QualityRootFolder "*128"
-    } elseif(($UnitNumber -ge 129) -and ($UnitNumber -le 160)){
-        $Colo = Get-ChildItem $QualityRootFolder "*128"
-    } 
-        
+    switch ($UnitNumber) {
+        {$_ -le 32} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*32"
+            break
+        }
+        {$_ -ge 33 -and $_ -le 64} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*64"
+            break
+        }
+        {$_ -ge 65 -and $_ -le 96} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*96"
+            break
+        }
+        {$_ -ge 97 -and $_ -le 128} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*128"
+            break
+        }
+        {$_ -ge 129 -and $_ -le 160} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*160"
+            break
+        }
+        {$_ -ge 161 -and $_ -le 192} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*192"
+            break
+        }
+        default {
+            Write-Host "Unit number out of expected range."
+            return
+        }
+    }
+
     $ColoRootFolder = "$QualityRootFolder\$Colo"
 
-    $UnitFolder = Get-ChildItem  $ColoRootFolder "*-$UnitNumber*" | Where-Object { $_.Name -match "\-$UnitNumber[L|R]$" }
+    try {
+        $UnitFolder = Get-ChildItem -Path $ColoRootFolder -Filter "*-$UnitNumber*" | Where-Object { $_.Name -match "\-$UnitNumber[L|R]$" }
+        if ($UnitFolder -eq $null) {
+            throw "No unit folder found matching the pattern *-$UnitNumber*"
+        }
 
-    $FunctionalityRootFolder = "$ColoRootFolder\$UnitFolder"
-    $FunctionalityFolder = Get-ChildItem  $FunctionalityRootFolder "*functionality*"
-    $FileName = $FunctionalityRootFolder.ToString()
+        $FunctionalityRootFolder = "$ColoRootFolder\$UnitFolder"
+        Write-Host "Functionality Root Folder: $FunctionalityRootFolder"
 
-    $UnitRootFolder = "$FunctionalityRootFolder\$FunctionalityFolder"
+        $FunctionalityFolder = Get-ChildItem -Path $FunctionalityRootFolder -Filter "*functionality*"
+        if ($FunctionalityFolder -eq $null) {
+            throw "No functionality folder found in $FunctionalityRootFolder"
+        }
+
+        $UnitRootFolder = "$FunctionalityRootFolder\$FunctionalityFolder"
+        Write-Host "Unit Root Folder: $UnitRootFolder"
+    } catch {
+        Write-Host "Error: $_"
+        return
+    }
 
     $Destination = $UnitRootFolder
-    $RootSource = $env:USERPROFILE + "\Documents" 
-    $SourceFile = Get-ChildItem $RootSource "*$JobNumber-$UnitNumber*"
-    foreach($file in $RootSource){
-        $FileFT = Get-ChildItem $file "*FT.pdf"
-        $FileWT = Get-ChildItem $file "*WT.pdf"
+    $RootSource = "$env:USERPROFILE\Documents"
+
+    try {
+        $SourceFile = Get-ChildItem -Path $RootSource -Filter "*$JobNumber-$UnitNumber*"
+        if ($SourceFile -eq $null) {
+            throw "No files found matching the pattern *$JobNumber-$UnitNumber*"
+        }
+    } catch {
+        Write-Host "Error: $_"
+        return
     }
+
+    foreach ($file in $SourceFile) {
+        $FileFT = Get-ChildItem -Path $RootSource -Filter "*$UnitNumber*" | Where-Object { $_.Name -like "*FT.pdf" }
+        $FileWT = Get-ChildItem -Path $RootSource -Filter "*$UnitNumber*" | Where-Object { $_.Name -like "*WT.pdf" }
+
+    }
+
     $FT = "$RootSource\$FileFT"
-    if($FileWT){
+    if ($FileWT) {
         $WT = "$RootSource\$FileWT"
     }
-    # Set-Location $UnitRootFolder
-    # Invoke-Item $UnitRootFolder
-    Move-Item $FT $Destination
-    if($FileWT){
-        Move-Item $WT $Destination
+
+    Write-Host "Destination: $Destination"
+    Write-Host "FT File: $FT"
+    Write-Host "WT File: $WT"
+
+    try {
+        Move-Item -Path $FT -Destination $Destination
+        if ($FileWT) {
+            Move-Item -Path $WT -Destination $Destination
+        }
+    } catch {
+        Write-Host "Error moving files: $_"
     }
-    Get-ChildItem $UnitRootFolder
+
+    Get-ChildItem -Path $UnitRootFolder
+    Invoke-Item $UnitRootFolder
 }
+
 
 # ls "https://apps.jci.com/sites/JCI-EdmontonElectricalTesters/Shared Documents/General/Plant 4/In Progress functionality reports/Ballard ALC/Ballard"
 
@@ -88,11 +167,11 @@ $UnitNumberInput.Size = New-Object System.Drawing.Size(40,40)
 
 $MoveFilesButton = New-Object System.Windows.Forms.button
 $MoveFilesButton.text = "Move Files"
-$MoveFilesButton.Location = new-object System.Drawing.Size(100,70)
+$MoveFilesButton.Location = new-object System.Drawing.Size(70,75)
 
 
-$MoveFilesButton.Add_Click({ 
-    MoveFiles
+$MoveFilesButton.Add_Click({
+    moveFiles -UnitNumberInput $UnitNumberInput -JobNumberInput $JobNumberInput
 })
 
 $Form = New-Object Windows.Forms.Form
