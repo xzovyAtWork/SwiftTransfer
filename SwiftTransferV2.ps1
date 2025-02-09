@@ -110,8 +110,8 @@ function moveFiles {
     }
 
     foreach ($file in $SourceFile) {
-        $FileFT = Get-ChildItem -Path $RootSource -Filter "*$UnitNumber*" | Where-Object { $_.Name -like "*FT.pdf" }
-        $FileWT = Get-ChildItem -Path $RootSource -Filter "*$UnitNumber*" | Where-Object { $_.Name -like "*WT.pdf" }
+        $FileFT = Get-ChildItem -Path $RootSource  "*$JobNumber-$UnitNumber*FT.pdf"
+        $FileWT = Get-ChildItem -Path $RootSource  "*$JobNumber-$UnitNumber*WT.pdf"
 
     }
 
@@ -172,7 +172,7 @@ $MoveFilesButton.Location = new-object System.Drawing.Size(70,75)
 
 $MoveFilesButton.Add_Click({
     moveFiles -UnitNumberInput $UnitNumberInput -JobNumberInput $JobNumberInput
-    $Form.Close()
+    # $Form.Close()
 })
 
 $Form = New-Object Windows.Forms.Form
