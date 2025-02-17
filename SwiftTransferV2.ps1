@@ -97,7 +97,12 @@ function moveFiles {
     }
 
     $Destination = $UnitRootFolder
-    $RootSource = "$env:USERPROFILE\Documents"
+
+    if("$env:USERPROFILE\OneDrive - Johnson Controls\Documents"){
+        $RootSource = "$env:USERPROFILE\OneDrive - Johnson Controls\Documents"
+    } else {
+        $RootSource = "$env:USERPROFILE\Documents"
+    }
 
     try {
         $SourceFile = Get-ChildItem -Path $RootSource -Filter "*$JobNumber-$UnitNumber*"
@@ -172,6 +177,11 @@ $MoveFilesButton.Location = new-object System.Drawing.Size(70,75)
 
 $MoveFilesButton.Add_Click({
     moveFiles -UnitNumberInput $UnitNumberInput -JobNumberInput $JobNumberInput
+    Start-Job -ScriptBlock {
+        Start-Sleep -Seconds 7
+        # Use the form variable from the parent scope
+        $Form.Close()
+    }
     # $Form.Close()
 })
 
