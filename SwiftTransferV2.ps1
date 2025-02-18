@@ -98,7 +98,7 @@ function moveFiles {
 
     $Destination = $UnitRootFolder
 
-    if("$env:USERPROFILE\OneDrive - Johnson Controls\Documents"){
+    if(Test-Path -Path "$env:USERPROFILE\OneDrive - Johnson Controls\Documents"){
         $RootSource = "$env:USERPROFILE\OneDrive - Johnson Controls\Documents"
     } else {
         $RootSource = "$env:USERPROFILE\Documents"
