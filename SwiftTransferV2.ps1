@@ -130,7 +130,9 @@ function moveFiles {
     Write-Host "WT File: $WT"
 
     try {
-        Move-Item -Path $FT -Destination $Destination
+        if($FileFT){
+            Move-Item -Path $FT -Destination $Destination
+        }
         if ($FileWT) {
             Move-Item -Path $WT -Destination $Destination
         }
