@@ -77,7 +77,7 @@ function moveFiles {
 
     try {
         $UnitFolder = Get-ChildItem -Path $ColoRootFolder -Filter "*-$UnitNumber*" | Where-Object { $_.Name -match "\-$UnitNumber[L|R]$" }
-        if ($UnitFolder -eq $null) {
+        if ($null -eq $UnitFolder) {
             throw "No unit folder found matching the pattern *-$UnitNumber*"
         }
 
@@ -85,7 +85,7 @@ function moveFiles {
         Write-Host "Functionality Root Folder: $FunctionalityRootFolder"
 
         $FunctionalityFolder = Get-ChildItem -Path $FunctionalityRootFolder -Filter "*functionality*"
-        if ($FunctionalityFolder -eq $null) {
+        if ($null -eq $FunctionalityFolder) {
             throw "No functionality folder found in $FunctionalityRootFolder"
         }
 
@@ -144,6 +144,93 @@ function moveFiles {
     Invoke-Item $UnitRootFolder
 }
 
+function search{
+    param($ColoNumber, $JobNumber)
+
+
+    $ColoNumber = [int]$UnitNumberInput.text
+    $JobNumber = $JobNumberInput.text
+    $Prefix =  $JobNumber.ToString().substring(0, 2) + "00"
+
+    $RootFolder = "N:\$Prefix"
+
+    try {
+        $JobFolders = Get-ChildItem -Path $RootFolder -Filter "*$JobNumber*"
+        if ($JobFolders.Count -eq 0) {
+            throw "No job folders found matching the pattern *$JobNumber*"
+        }
+    } catch {
+        Write-Host "Error: $_"
+        return
+    }
+
+    foreach ($job in $JobFolders) {
+        try {
+            $qualityPath = "$RootFolder\$job\2 Quality"
+
+            Write-Host "Checking path: $qualityPath"
+
+            if (Test-Path $qualityPath) {
+                if (Get-ChildItem -Path $qualityPath -Filter "*Units*") {
+                    $QualityRootFolder = $qualityPath
+                    Write-Host "Quality Root Folder found: $QualityRootFolder"
+                } else {
+                    Write-Host "No Units folder found in: $qualityPath"
+                }
+            } else {
+                Write-Host "Path does not exist: $qualityPath"
+            }
+        } catch {
+            Write-Host "Error accessing path: $_"
+        }
+    }
+
+    switch ($ColoNumber) {
+        {$_ -eq 1} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*32"
+            break
+        }
+        {$_ -eq 2} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*64"
+            break
+        }
+        {$_ -eq 3} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*96"
+            break
+        }
+        {$_ -eq 4} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*128"
+            break
+        }
+        {$_ -eq 5} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*160"
+            break
+        }
+        {$_ -eq 6} {
+            $Colo = Get-ChildItem $QualityRootFolder -Filter "*192"
+            break
+        }
+        default {
+            Write-Host "Unit number out of expected range."
+            return
+        }
+    }
+
+    $ColoRootFolder = "$QualityRootFolder\$Colo"
+    $UnitList = Get-ChildItem $ColoRootFolder
+    $count = 0
+    $missing = 0
+    foreach($child in $UnitList){
+        if(Test-Path "$ColoRootFolder\$child\Functionality & calibration sheets\*.pdf"){
+            $count = $count + 1
+            $Unit = Get-ChildItem -Path "$ColoRootFolder\$child\Functionality & calibration sheets" -Name
+            Write-Host $Unit
+        }else {$missing = $missing + 1}
+        } Write-Host "Units in Colo: $count"
+        Write-Host "Missing $missing files"
+        return 
+}
+
 
 # ls "https://apps.jci.com/sites/JCI-EdmontonElectricalTesters/Shared Documents/General/Plant 4/In Progress functionality reports/Ballard ALC/Ballard"
 
@@ -162,9 +249,9 @@ $JobNumberInput.Size = New-Object System.Drawing.Size(40,40)
 $JobNumberInput.Location = new-object System.Drawing.Size(40,40)
 
 $UnitNumberLabel = New-Object System.Windows.Forms.label
-$UnitNumberLabel.text = "Unit Number:"
+$UnitNumberLabel.text = "Unit or Colo Number:"
 $UnitNumberLabel.Location = new-object System.Drawing.Size(100,10) # 20,20
-$UnitNumberLabel.Size = New-Object System.Drawing.Size(80,20) #100,20
+$UnitNumberLabel.Size = New-Object System.Drawing.Size(120,30) #100,20
 
 $UnitNumberInput = New-Object System.Windows.Forms.textbox
 $UnitNumberInput.text = ""
@@ -174,17 +261,16 @@ $UnitNumberInput.Size = New-Object System.Drawing.Size(40,40)
 
 $MoveFilesButton = New-Object System.Windows.Forms.button
 $MoveFilesButton.text = "Move Files"
-$MoveFilesButton.Location = new-object System.Drawing.Size(70,75)
-
-
+$MoveFilesButton.Location = new-object System.Drawing.Size(20,75)
 $MoveFilesButton.Add_Click({
     moveFiles -UnitNumberInput $UnitNumberInput -JobNumberInput $JobNumberInput
-    Start-Job -ScriptBlock {
-        Start-Sleep -Seconds 7
-        # Use the form variable from the parent scope
-        $Form.Close()
-    }
-    # $Form.Close()
+})
+
+$SearchFilesButton = New-Object System.Windows.Forms.button
+$SearchFilesButton.text = "Search Files"
+$SearchFilesButton.Location = new-object System.Drawing.Size(120,75)
+$SearchFilesButton.Add_Click({
+    search -ColoNumber $ColoNumber -JobNumberInput $JobNumberInput
 })
 
 $Form = New-Object Windows.Forms.Form
@@ -197,6 +283,7 @@ $Form.Controls.add($JobNumberInput)
 $Form.Controls.add($UnitNumberLabel)
 $Form.Controls.add($UnitNumberInput)
 $Form.Controls.add($MoveFilesButton)
+$Form.Controls.add($SearchFilesButton)
 
 $Form.Add_Shown({$Form.Activate()})
 $Form.ShowDialog()
