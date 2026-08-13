@@ -115,26 +115,18 @@ function moveFiles {
     }
 
     foreach ($file in $SourceFile) {
-        $FileFT = Get-ChildItem -Path $RootSource  "*$JobNumber-$UnitNumber*FT.pdf"
-        $FileWT = Get-ChildItem -Path $RootSource  "*$JobNumber-$UnitNumber*WT.pdf"
-
+        $FileFT = Get-ChildItem -Path $RootSource  "*$JobNumber-$UnitNumber*"
     }
 
     $FT = "$RootSource\$FileFT"
-    if ($FileWT) {
-        $WT = "$RootSource\$FileWT"
-    }
+
 
     Write-Host "Destination: $Destination"
     Write-Host "FT File: $FT"
-    Write-Host "WT File: $WT"
 
     try {
         if($FileFT){
             Move-Item -Path $FT -Destination $Destination
-        }
-        if ($FileWT) {
-            Move-Item -Path $WT -Destination $Destination
         }
     } catch {
         Write-Host "Error moving files: $_"
