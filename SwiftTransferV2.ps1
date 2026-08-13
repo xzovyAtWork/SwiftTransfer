@@ -8,7 +8,7 @@ function moveFiles {
     $JobNumber = $JobNumberInput.text
     $Prefix =  $JobNumber.ToString().substring(0, 2) + "00"
 
-    $RootFolder = "N:\$Prefix"
+    $RootFolder = "\\go.johnsoncontrols.com\Nasuni$\1159\SA-FS02\$Prefix"
 
     try {
         $JobFolders = Get-ChildItem -Path $RootFolder -Filter "*$JobNumber*"
