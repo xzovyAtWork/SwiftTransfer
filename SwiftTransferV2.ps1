@@ -176,39 +176,10 @@ function search{
             Write-Host "Error accessing path: $_"
         }
     }
-
-    switch ($ColoNumber) {
-        {$_ -eq 1} {
-            $Colo = Get-ChildItem $QualityRootFolder -Filter "*32"
-            break
-        }
-        {$_ -eq 2} {
-            $Colo = Get-ChildItem $QualityRootFolder -Filter "*64"
-            break
-        }
-        {$_ -eq 3} {
-            $Colo = Get-ChildItem $QualityRootFolder -Filter "*96"
-            break
-        }
-        {$_ -eq 4} {
-            $Colo = Get-ChildItem $QualityRootFolder -Filter "*128"
-            break
-        }
-        {$_ -eq 5} {
-            $Colo = Get-ChildItem $QualityRootFolder -Filter "*160"
-            break
-        }
-        {$_ -eq 6} {
-            $Colo = Get-ChildItem $QualityRootFolder -Filter "*192"
-            break
-        }
-        default {
-            Write-Host "Unit number out of expected range."
-            return
-        }
-    }
+    $Colo = Get-ChildItem $QualityRootFolder -Filter "*Colo $ColoNumber*"
 
     $ColoRootFolder = "$QualityRootFolder\$Colo"
+    Write-Host $ColoRootFolder
     $UnitList = Get-ChildItem $ColoRootFolder
     $count = 0
     $missing = 0
