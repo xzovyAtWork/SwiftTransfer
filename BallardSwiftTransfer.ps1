@@ -12,7 +12,7 @@ function moveFiles {
     $DestURL = "$Base\$Prefix"
 
     try {
-        $JobNumberFolder = Get-ChildItem -Path $RootFolder -Filter "*$JobNumber*"
+        $JobNumberFolder = Get-ChildItem -Path $DestURL -Filter "*$JobNumber*"
         if ($JobNumberFolder.Count -eq 0) {
             throw "No job folders found matching the pattern *$JobNumber*"
         }elseif($JobNumberFolder.Count -gt 1){
@@ -39,6 +39,8 @@ function moveFiles {
             Default { 
                 Write-Host "Invalid option, try again." -ForegroundColor Red; Start-Sleep -Seconds 1 }
             }
+        }else{
+            $DestURL = Join-Path $DestURL $JobNumberFolder
         }
     } catch {
         Write-Host "Error: $_"
@@ -78,10 +80,10 @@ function moveFiles {
         }
     }
 
-    $DestURL = "$DestURL\$Colo"
-
+    $DestURL = Join-Path $DestURL $Colo
+    Write-Host $DestURL
     try {
-        $UnitFolder = Get-ChildItem -Path $DestURL -Filter "*-$UnitNumber*" | Where-Object { $_.Name -match "\-$UnitNumber[L|R]$" }
+        $UnitFolder = Get-ChildItem -Path $DestURL -Filter "*$UnitNumber*" | Where-Object { $_.Name -match "\-$UnitNumber[L|R]$" }
         if ($null -eq $UnitFolder) {
             throw "No unit folder found matching the pattern *-$UnitNumber*"
         }
