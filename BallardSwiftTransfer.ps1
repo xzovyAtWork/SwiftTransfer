@@ -240,7 +240,7 @@ $UnitNumberInput.Location = new-object System.Drawing.Size(130,40) #40,40
 $UnitNumberInput.Size = New-Object System.Drawing.Size(40,40)
 
 $MoveFilesButton = New-Object System.Windows.Forms.button
-$MoveFilesButton.text = "Move Files"
+$MoveFilesButton.text = "Move File"
 $MoveFilesButton.Location = new-object System.Drawing.Size(20,75)
 $MoveFilesButton.Add_Click({
     moveFiles -UnitNumberInput $UnitNumberInput -JobNumberInput $JobNumberInput
