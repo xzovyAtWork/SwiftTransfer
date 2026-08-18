@@ -144,7 +144,7 @@ function search{
     $JobNumber = $JobNumberInput.text
     $Prefix =  $JobNumber.ToString().substring(0, 2) + "00"
 
-    $RootFolder = "$Base/$Prefix"
+    $RootFolder =  Join-Path $Base $Prefix
 
     try {
         $JobFolders = Get-ChildItem -Path $RootFolder -Filter "*$JobNumber*"
@@ -178,7 +178,7 @@ function search{
     }
     $Colo = Get-ChildItem $QualityRootFolder -Filter "*Colo $ColoNumber*"
 
-    $ColoRootFolder = "$QualityRootFolder\$Colo"
+    $ColoRootFolder = Join-Path $QualityRootFolder $Colo
     Write-Host $ColoRootFolder
     $UnitList = Get-ChildItem $ColoRootFolder
     $count = 0
