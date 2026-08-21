@@ -151,10 +151,11 @@ function search{
     $JobNumber = $JobNumberInput.text
     $Prefix =  $JobNumber.ToString().substring(0, 2) + "00"
 
-    $DestURL = "$Base/$Prefix"
+    $DestURL =  Join-Path $Base $Prefix
 
     try {
         $JobNumberFolder = Get-ChildItem -Path $DestURL -Filter "*$JobNumber*"
+        Write-Host $JobNumberFolder
         if ($JobNumberFolder.Count -eq 0) {
             throw "No job folders found matching the pattern *$JobNumber*"
         }elseif($JobNumberFolder.Count -gt 1){
@@ -181,6 +182,8 @@ function search{
             Default { 
                 Write-Host "Invalid option, try again." -ForegroundColor Red; Start-Sleep -Seconds 1 }
             }
+        }else{
+            $DestURL = Join-Path $DestURL $JobNumberFolder
         }
     } catch {
         Write-Host "Error: $_"
@@ -188,10 +191,10 @@ function search{
     }
 
     $temp = Get-ChildItem -Path $DestURL -Filter "*Quality*"
-    $DestURL = "$DestURl\$temp"
+    $DestURL = Join-Path  $DestURl $temp
     $Colo = Get-ChildItem $DestURL -Filter "*Colo $ColoNumber*"
 
-    $ColoRootFolder = "$DestUrl\$Colo"
+    $ColoRootFolder =  Join-Path $DestUrl $Colo
     Write-Host $ColoRootFolder
     $UnitList = Get-ChildItem $ColoRootFolder
     $count = 0
